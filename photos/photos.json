@@ -1,0 +1,43 @@
+[
+    {
+      "image_path": "DogV2.jpg",
+      "image_title": "The Black Dog",
+      "section": "Black & White"
+    },
+    {
+      "image_path": "Door.jpg",
+      "image_title": "The Mailbox",
+      "section":"Black & White"
+    },
+    {
+      "image_path": "Leaves.jpg",
+      "image_title": "The Forest of Leaves",
+      "section":"Black & White"
+    },
+    {
+      "image_path": "Red Berrys.jpg",
+      "image_title": "Berrys on a Tree",
+      "section":"Black & White"
+    },    
+    {
+      "image_path": "Street.jpg",
+      "image_title": "The Cross Roads of Newell Street",
+      "section":"Black & White"
+    },
+    {
+      "image_path": "Sides.jpg",
+      "image_title": "The Other Side",
+      "section":"Plants"
+    },
+    {
+      "image_path": "The Plant.jpg",
+      "image_title": "Blurry Glory",
+      "section":"Plants"
+    },
+    {
+      "image_path": "Pink.png",
+      "image_title": "Old Times",
+      "section":"Plants"
+    }
+    
+  ]
