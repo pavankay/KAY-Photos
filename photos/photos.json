@@ -38,6 +38,21 @@
       "image_path": "Pink.png",
       "image_title": "Old Times",
       "section":"Plants"
+    },
+    {
+      "image_path" : "Canyon.png",
+      "image_title" : "The Canyon",
+      "section" : "Microscopy"
+    },
+    {
+      "image_path" : "The Pink Cresent.png",
+      "image_title" : "The Pink Cresent",
+      "section" : "Microscopy"
+    },
+    {
+      "image_path" : "The Rivers of Blue.png",
+      "image_title" : "The Rivers of Blue",
+      "section" : "Microscopy"
     }
     
   ]

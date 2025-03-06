@@ -162,21 +162,19 @@
         .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            grid-auto-rows: 300px;
-            grid-auto-flow: dense;
-            gap: 20px;
-            margin-bottom: 60px;
+            gap: 0;
+            margin-bottom: 0;
         }
         
         .gallery-item {
             position: relative;
             overflow: hidden;
-            border-radius: 8px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border-radius: 0;
+            box-shadow: none;
             cursor: pointer;
             opacity: 0;
             transform: translateY(20px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
+            transition: opacity 0.8s ease, transform 0.8s ease;
             min-height: 300px;
         }
         
@@ -262,24 +260,46 @@
         .categories {
             display: flex;
             justify-content: center;
-            flex-wrap: wrap;
-            gap: 15px;
+            gap: 30px;
             margin-bottom: 40px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
         }
         
         .category-btn {
             background-color: transparent;
             color: #f5f5f5;
-            border: 1px solid #333;
-            padding: 8px 16px;
-            border-radius: 20px;
+            border: none;
+            padding: 8px 0;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
-        .category-btn:hover, .category-btn.active {
+        .category-btn::after {
+            content: '';
+            position: absolute;
+            bottom: -21px;
+            left: 0;
+            width: 100%;
+            height: 2px;
             background-color: #f5f5f5;
-            color: #121212;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .category-btn:hover::after,
+        .category-btn.active::after {
+            transform: scaleX(1);
+        }
+        
+        .category-btn:hover,
+        .category-btn.active {
+            background-color: transparent;
+            color: #f5f5f5;
         }
         
         .section-title, .about-content h2 {
@@ -415,6 +435,29 @@
             border-top: 1px solid #333;
             margin: 60px 0;
             width: 100%;
+        }
+        
+        .gallery-section {
+            transition: opacity 0.3s ease;
+            opacity: 1;
+        }
+        
+        .gallery-section.hidden {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+        
+        #gallery {
+            position: relative;
+            min-height: 400px;
+        }
+        
+        .gallery-item {
+            transition: opacity 0.8s ease, transform 0.8s ease;
         }
     </style>
 </head>
@@ -569,11 +612,15 @@
             };
             
             const addGalleryItemWithAnimation = (item, index, galleryElement) => {
-                galleryElement.appendChild(item);
-                setTimeout(() => {
+                return new Promise((resolve) => {
+                    galleryElement.appendChild(item);
+                    item.offsetHeight;
+                    
                     item.style.opacity = '1';
                     item.style.transform = 'translateY(0)';
-                }, 100 * index);
+                    
+                    setTimeout(resolve, 800);
+                });
             };
             
             const createSectionIfNeeded = (sectionId, displayName) => {
@@ -611,15 +658,15 @@
                 
                 this.classList.add('active');
                 
-                document.querySelectorAll('.gallery-section').forEach(section => 
-                    section.classList.add('hidden')
-                );
-                
                 const sectionId = this.getAttribute('data-category');
-                const sectionToShow = document.getElementById(sectionId);
-                if (sectionToShow) {
-                    sectionToShow.classList.remove('hidden');
-                }
+                
+                document.querySelectorAll('.gallery-section').forEach(section => {
+                    if (section.id === sectionId) {
+                        section.classList.remove('hidden');
+                    } else {
+                        section.classList.add('hidden');
+                    }
+                });
             };
             
             document.querySelector('.category-btn[data-category="all"]')
@@ -643,10 +690,9 @@
                     
                     const sectionsMap = new Map();
                     data.forEach(photo => {
-                        const section = photo.section;
-                        if (section && !sectionsMap.has(section)) {
-                            const sectionId = formatSectionId(section);
-                            sectionsMap.set(sectionId, section);
+                        if (photo.section && !sectionsMap.has(photo.section)) {
+                            const sectionId = formatSectionId(photo.section);
+                            sectionsMap.set(sectionId, photo.section);
                         }
                     });
                     
@@ -654,21 +700,22 @@
                         createSectionIfNeeded(sectionId, displayName);
                     });
                     
-                    data.forEach((photo, index) => {
+                    for (let i = 0; i < data.length; i++) {
+                        const photo = data[i];
                         const imagePath = `photos/image_files/${photo.image_path}`;
                         const title = photo.image_title || 'Untitled';
                         const section = photo.section ? formatSectionId(photo.section) : null;
                         
                         const allItem = createGalleryItem(imagePath, title);
-                        addGalleryItemWithAnimation(allItem, index, document.getElementById('all-gallery'));
+                        await addGalleryItemWithAnimation(allItem, i, document.getElementById('all-gallery'));
                         
                         if (section && sectionGalleries[section]) {
                             const sectionItem = createGalleryItem(imagePath, title);
-                            addGalleryItemWithAnimation(sectionItem, index, sectionGalleries[section]);
+                            await addGalleryItemWithAnimation(sectionItem, i, sectionGalleries[section]);
                         }
-                    });
+                    }
                     
-                    setTimeout(setupLightbox, 500);
+                    setupLightbox();
                     
                 } catch (error) {
                     const defaultSections = [
