@@ -161,8 +161,8 @@
         
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 15px;
             margin-bottom: 20px;
         }
         
@@ -177,10 +177,11 @@
             transition: opacity 0.8s ease, transform 0.8s ease;
             min-height: 200px;
             background-color: #1e1e1e;
+            grid-column: span 4; /* Default span 4 columns (1/3 of grid) */
         }
         
         .gallery-item.wide {
-            grid-column: span 2;
+            grid-column: span 6; /* 1/2 of grid width */
         }
         
         .gallery-item.tall {
@@ -189,9 +190,13 @@
         }
         
         .gallery-item.large {
-            grid-column: span 2;
+            grid-column: span 8; /* 2/3 of grid width */
             grid-row: span 2;
             min-height: 420px;
+        }
+        
+        .gallery-item.extra-wide {
+            grid-column: span 12; /* Full width */
         }
         
         .gallery-item img {
@@ -405,16 +410,42 @@
             }
         }
         
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
             .gallery {
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: repeat(9, 1fr);
+            }
+            
+            .gallery-item {
+                grid-column: span 3; /* 1/3 of 9 columns */
+            }
+            
+            .gallery-item.wide {
+                grid-column: span 6; /* 2/3 of grid width */
+            }
+            
+            .gallery-item.large,
+            .gallery-item.extra-wide {
+                grid-column: span 9; /* Full width on medium screens */
             }
         }
         
         @media (max-width: 768px) {
             .gallery {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
+                grid-template-columns: repeat(6, 1fr);
+                gap: 10px;
+            }
+            
+            .gallery-item {
+                grid-column: span 3; /* 1/2 of 6 columns */
+            }
+            
+            .gallery-item.wide,
+            .gallery-item.large {
+                grid-column: span 6; /* Full width on tablet */
+            }
+            
+            .gallery-item.extra-wide {
+                grid-column: span 6; /* Full width */
             }
             
             .about-section {
@@ -428,14 +459,22 @@
         
         @media (max-width: 480px) {
             .gallery {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
             }
             
+            .gallery-item,
             .gallery-item.wide,
             .gallery-item.tall,
-            .gallery-item.large {
-                grid-column: auto;
+            .gallery-item.large,
+            .gallery-item.extra-wide {
+                grid-column: span 2; /* Full width on mobile */
                 grid-row: auto;
+                min-height: 180px;
+            }
+            
+            .gallery-item.tall {
+                min-height: 300px;
             }
         }
             
@@ -578,7 +617,9 @@
                 galleryItems.forEach(item => {
                     item.addEventListener('click', function() {
                         const thumbImg = this.querySelector('img');
-                        const fullSizeUrl = thumbImg.dataset.fullSize;
+                        
+                        // Get the original full-size URL (either from data-original-src or data-full-size)
+                        const fullSizeUrl = thumbImg.dataset.originalSrc || thumbImg.dataset.fullSize || thumbImg.src;
                         
                         // Show loading state in lightbox
                         lightbox.style.display = 'flex';
@@ -586,15 +627,34 @@
                         
                         // Load the full-size image only when lightbox is opened
                         if (fullSizeUrl) {
+                            // Add a loading indicator
+                            const loadingText = document.createElement('div');
+                            loadingText.textContent = 'Loading high resolution image...';
+                            loadingText.style.color = 'white';
+                            loadingText.style.position = 'absolute';
+                            loadingText.style.bottom = '10px';
+                            loadingText.style.left = '0';
+                            loadingText.style.right = '0';
+                            loadingText.style.textAlign = 'center';
+                            lightbox.querySelector('.lightbox-content').appendChild(loadingText);
+                            
                             // Check if we have it cached already
                             if (imageCache.has(fullSizeUrl)) {
                                 lightboxImg.src = imageCache.get(fullSizeUrl);
+                                loadingText.remove();
                             } else {
                                 // Preload the full-size image
                                 const fullImg = new Image();
                                 fullImg.onload = function() {
                                     lightboxImg.src = fullSizeUrl;
                                     imageCache.set(fullSizeUrl, fullSizeUrl);
+                                    loadingText.remove();
+                                };
+                                fullImg.onerror = function() {
+                                    loadingText.textContent = 'Could not load high resolution image';
+                                    setTimeout(() => {
+                                        loadingText.remove();
+                                    }, 2000);
                                 };
                                 fullImg.src = fullSizeUrl;
                             }
@@ -613,11 +673,80 @@
                 }
             });
             
+            // Thumbnail cache to prevent regenerating thumbnails
+            const thumbnailCache = new Map();
+            
+            // Function that actually creates thumbnails on the client side
+            const createThumbnail = (originalSrc, targetWidth = 500) => {
+                // Check if we already have this thumbnail cached
+                if (thumbnailCache.has(originalSrc)) {
+                    return thumbnailCache.get(originalSrc);
+                }
+                
+                // Return a promise that resolves with the thumbnail URL
+                return new Promise((resolve, reject) => {
+                    // Create a new image to load the original
+                    const img = new Image();
+                    
+                    // Set up load handler
+                    img.onload = function() {
+                        // Get original dimensions
+                        const width = this.naturalWidth;
+                        const height = this.naturalHeight;
+                        
+                        // If image is already small enough, just use it
+                        if (width <= targetWidth) {
+                            thumbnailCache.set(originalSrc, originalSrc);
+                            resolve(originalSrc);
+                            return;
+                        }
+                        
+                        // Calculate new height maintaining aspect ratio
+                        const aspectRatio = width / height;
+                        const newHeight = Math.round(targetWidth / aspectRatio);
+                        
+                        // Create canvas for resizing
+                        const canvas = document.createElement('canvas');
+                        canvas.width = targetWidth;
+                        canvas.height = newHeight;
+                        
+                        // Draw image at new size
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, targetWidth, newHeight);
+                        
+                        // Get the resized image as a data URL (thumbnail)
+                        try {
+                            // Lower quality for thumbnails (0.6-0.8 is usually good)
+                            const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.7);
+                            
+                            // Cache and return the thumbnail URL
+                            thumbnailCache.set(originalSrc, thumbnailUrl);
+                            resolve(thumbnailUrl);
+                        } catch (e) {
+                            // If we can't create a thumbnail (e.g., CORS issues), use original
+                            console.warn('Could not create thumbnail:', e);
+                            thumbnailCache.set(originalSrc, originalSrc);
+                            resolve(originalSrc);
+                        }
+                    };
+                    
+                    // Handle errors
+                    img.onerror = function() {
+                        console.error('Failed to load image for thumbnail creation:', originalSrc);
+                        resolve(originalSrc); // Fall back to original
+                    };
+                    
+                    // Set crossOrigin to anonymous to avoid tainted canvas issues if needed
+                    img.crossOrigin = 'anonymous';
+                    img.src = originalSrc;
+                });
+            };
+            
             // Function to generate a thumbnail URL from a full-size image path
             const generateThumbnailUrl = (imagePath) => {
-                // This is where you'd implement a server-side thumbnail generation
-                // For now, we'll simulate by adding a query parameter
-                return `${imagePath}?thumbnail=true`;
+                // For gallery view - return the original path
+                // We'll create the actual thumbnail when the image loads
+                return imagePath;
             };
             
             // Create a gallery item with thumbnail and full-size image reference
@@ -648,22 +777,53 @@
                 img.onload = function() {
                     placeholder.style.display = 'none';
                     
+                    // Generate an actual thumbnail for this image
+                    createThumbnail(this.src).then(thumbnailUrl => {
+                        // Only update the src if we got a different URL (an actual thumbnail)
+                        if (thumbnailUrl !== this.src) {
+                            // Store the original URL for the lightbox
+                            this.dataset.originalSrc = this.src;
+                            // Switch to the thumbnail
+                            this.src = thumbnailUrl;
+                        }
+                    }).catch(err => {
+                        console.warn('Failed to create thumbnail:', err);
+                    });
+                    
                     // Determine image size class after load
                     const setImageClass = () => {
                         // Create a temporary image to get natural dimensions
                         const tempImg = new Image();
                         tempImg.onload = function() {
                             const ratio = this.width / this.height;
+                            const width = this.width;
+                            const height = this.height;
                             
-                            if (ratio >= 1.7) {
+                            // More sophisticated classification based on aspect ratio and size
+                            if (ratio >= 2.0) {
+                                // Extra wide panorama
+                                item.classList.add('extra-wide');
+                            } else if (ratio >= 1.7 && ratio < 2.0) {
+                                // Wide format
                                 item.classList.add('wide');
-                            } else if (ratio <= 0.7) {
+                            } else if (ratio <= 0.6) {
+                                // Very tall format
                                 item.classList.add('tall');
-                            } else if (ratio > 1.3 && ratio < 1.7 && this.width > 800) {
+                            } else if (ratio > 1.3 && ratio < 1.7 && width > 1200) {
+                                // Large landscape format with significant width
                                 item.classList.add('large');
-                            } else if (ratio >= 0.7 && ratio <= 0.8 && this.height > 800) {
+                            } else if (ratio >= 0.6 && ratio <= 0.7 && height > 1200) {
+                                // Large portrait format with significant height
+                                item.classList.add('large');
+                            } else if (width > 2000 || height > 2000) {
+                                // Any very large image regardless of ratio
                                 item.classList.add('large');
                             }
+                            
+                            // Store aspect ratio as data attribute for potential JS layout adjustments
+                            item.dataset.ratio = ratio.toFixed(2);
+                            item.dataset.width = width;
+                            item.dataset.height = height;
                         };
                         tempImg.src = thumbnailUrl;
                     };
@@ -695,16 +855,39 @@
                 return item;
             };
             
+            // Improved gallery layout manager
+            const createMasonryLayout = (gallery) => {
+                if (!gallery) return;
+                
+                // Get all gallery items
+                const items = Array.from(gallery.querySelectorAll('.gallery-item'));
+                
+                // Reset any inline styles that might affect layout
+                items.forEach(item => {
+                    if (item.dataset.positioned) return;
+                    
+                    // Make sure item is visible before calculating
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                    item.dataset.positioned = 'true';
+                });
+            };
+            
             const addGalleryItemWithAnimation = (item, index, galleryElement) => {
                 return new Promise((resolve) => {
                     galleryElement.appendChild(item);
                     item.offsetHeight; // Force reflow
                     
+                    // Shorter delay for better performance
                     setTimeout(() => {
                         item.style.opacity = '1';
                         item.style.transform = 'translateY(0)';
-                        setTimeout(resolve, 100); // Reduced animation duration
-                    }, index * 50); // Stagger effect, but much faster
+                        
+                        // Apply masonry layout after items are added
+                        createMasonryLayout(galleryElement);
+                        
+                        setTimeout(resolve, 50);
+                    }, Math.min(index * 30, 300)); // Cap the maximum delay
                 });
             };
             
@@ -833,11 +1016,43 @@
                         createSectionIfNeeded(sectionId, displayName);
                     });
                     
-                    // Process images in smaller batches
-                    const batchSize = 10;
-                    for (let i = 0; i < data.length; i += batchSize) {
-                        const batch = data.slice(i, i + batchSize);
+                    // Improved image loading and layout strategy
+                    
+                    // First, preprocess the data to optimize layout
+                    const optimizeImageLayout = (images) => {
+                        // Sort images by rough aspect ratio categories for better layout
+                        return [...images].sort((a, b) => {
+                            const aData = a.metadata || {};
+                            const bData = b.metadata || {};
+                            
+                            // If we have width/height metadata, use it
+                            const aRatio = aData.width && aData.height ? aData.width / aData.height : 1;
+                            const bRatio = bData.width && bData.height ? bData.width / bData.height : 1;
+                            
+                            // Group by general aspect ratio category
+                            const aCategory = aRatio > 1.5 ? 'wide' : (aRatio < 0.7 ? 'tall' : 'square');
+                            const bCategory = bRatio > 1.5 ? 'wide' : (bRatio < 0.7 ? 'tall' : 'square');
+                            
+                            // Alternate categories for better visual flow
+                            if (aCategory !== bCategory) {
+                                // Custom sort order: wide, square, tall, repeat
+                                const order = { 'wide': 0, 'square': 1, 'tall': 2 };
+                                return order[aCategory] - order[bCategory];
+                            }
+                            
+                            return 0;
+                        });
+                    };
+                    
+                    // Optimize the layout
+                    const optimizedData = optimizeImageLayout(data);
+                    
+                    // Process images in smaller batches with improved layout
+                    const batchSize = 12; // Multiple of our 12-column grid
+                    for (let i = 0; i < optimizedData.length; i += batchSize) {
+                        const batch = optimizedData.slice(i, i + batchSize);
                         
+                        // Process each batch
                         await Promise.all(batch.map(async (photo, batchIndex) => {
                             const index = i + batchIndex;
                             const imagePath = `photos/image_files/${photo.image_path}`;
@@ -853,9 +1068,15 @@
                             }
                         }));
                         
-                        // Pause between batches to prevent browser freezing
-                        if (i + batchSize < data.length) {
-                            await new Promise(resolve => setTimeout(resolve, 100));
+                        // Apply masonry layout after each batch
+                        createMasonryLayout(document.getElementById('all-gallery'));
+                        Object.values(sectionGalleries).forEach(gallery => {
+                            createMasonryLayout(gallery);
+                        });
+                        
+                        // Shorter pause between batches for better UX
+                        if (i + batchSize < optimizedData.length) {
+                            await new Promise(resolve => setTimeout(resolve, 50));
                         }
                     }
                     
