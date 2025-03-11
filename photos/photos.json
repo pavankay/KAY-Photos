@@ -40,19 +40,38 @@
       "section":"Plants"
     },
     {
-      "image_path" : "Canyon.png",
+      "image_path" : "Canyons.png",
       "image_title" : "The Canyon",
       "section" : "Microscopy"
     },
     {
-      "image_path" : "The Pink Cresent.png",
+      "image_path" : "Pink2.png",
       "image_title" : "The Pink Cresent",
       "section" : "Microscopy"
     },
     {
-      "image_path" : "The Rivers of Blue.png",
+      "image_path" : "Fish Blood.png",
       "image_title" : "The Rivers of Blue",
       "section" : "Microscopy"
+    },
+    {
+      "image_path" : "DOTS.png",
+      "image_title" : "World of Dots",
+      "section" : "Microscopy"
+    },
+    {
+      "image_path" : "Fsh insides.png",
+      "image_title" : "Fish Exposed",
+      "section" : "Microscopy"
+    },
+    {
+      "image_path" : "WORM.png",
+      "image_title" : "The Worm",
+      "section" : "Microscopy"
+    },
+    {
+      "image_path" : "Plant.png",
+      "image_title" : "Plant of Green",
+      "section" : "Plants"
     }
-    
   ]
