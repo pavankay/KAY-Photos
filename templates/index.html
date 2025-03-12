@@ -118,6 +118,7 @@
         }
         
         .container {
+            width: 90%;
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
@@ -129,6 +130,7 @@
             padding: 20px 0;
             border-bottom: 1px solid #333;
             margin-bottom: 40px;
+            width: 100%;
         }
         
         .logo {
@@ -141,6 +143,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
         }
         
         .nav-links {
@@ -153,6 +156,7 @@
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
+            font-size: 16px;
         }
         
         .nav-links a:hover {
@@ -269,6 +273,7 @@
             margin-bottom: 40px;
             border-bottom: 1px solid #333;
             padding-bottom: 20px;
+            flex-wrap: wrap;
         }
         
         .category-btn {
@@ -282,6 +287,7 @@
             font-size: 16px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin: 0 5px 10px;
         }
         
         .category-btn::after {
@@ -410,6 +416,40 @@
             }
         }
         
+        /* Pagination styling */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 30px 0;
+        }
+        
+        .pagination a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 12px;
+            border-radius: 20px;
+            background-color: #1e1e1e;
+            color: #f5f5f5;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .pagination a.active {
+            background-color: #f5f5f5;
+            color: #121212;
+        }
+        
+        .pagination a:hover:not(.active) {
+            background-color: #333;
+        }
+        
+        /* Improved responsive layout */
         @media (max-width: 1200px) {
             .gallery {
                 grid-template-columns: repeat(9, 1fr);
@@ -427,6 +467,18 @@
             .gallery-item.extra-wide {
                 grid-column: span 9; /* Full width on medium screens */
             }
+            
+            .container {
+                width: 95%;
+            }
+            
+            .section-title {
+                font-size: 24px;
+            }
+            
+            .about-content h2 {
+                font-size: 28px;
+            }
         }
         
         @media (max-width: 768px) {
@@ -437,11 +489,17 @@
             
             .gallery-item {
                 grid-column: span 3; /* 1/2 of 6 columns */
+                min-height: 180px;
             }
             
             .gallery-item.wide,
             .gallery-item.large {
                 grid-column: span 6; /* Full width on tablet */
+                min-height: 220px;
+            }
+            
+            .gallery-item.tall {
+                min-height: 320px;
             }
             
             .gallery-item.extra-wide {
@@ -450,46 +508,164 @@
             
             .about-section {
                 flex-direction: column;
+                gap: 30px;
+            }
+            
+            .about-image {
+                flex: 0 0 250px;
+                height: 250px;
+                width: 100%;
+                max-width: 350px;
+                margin: 0 auto;
             }
             
             .about-content {
                 padding-left: 0;
+                text-align: center;
+            }
+            
+            .about-content h2 {
+                text-align: center;
+                font-size: 24px;
+            }
+            
+            .about-content h2::after {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .nav-links {
+                gap: 20px;
+            }
+            
+            .categories {
+                gap: 15px;
+            }
+            
+            .category-btn {
+                font-size: 14px;
+            }
+            
+            .section-title {
+                font-size: 22px;
             }
         }
         
         @media (max-width: 480px) {
             .gallery {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
                 gap: 8px;
             }
             
+            .gallery-item {
+                grid-column: span 3; /* Full width on mobile */
+                min-height: 160px;
+            }
+            
+            .gallery-item.wide,
+            .gallery-item.tall,
+            .gallery-item.large,
+            .gallery-item.extra-wide {
+                grid-column: span 3; /* Full width on mobile */
+                grid-row: auto;
+                min-height: 160px;
+            }
+            
+            .gallery-item.tall {
+                min-height: 260px;
+            }
+            
+            .logo {
+                font-size: 20px;
+                letter-spacing: 1px;
+            }
+            
+            nav {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+            
+            .nav-links {
+                gap: 15px;
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .nav-links a {
+                font-size: 14px;
+            }
+            
+            .categories {
+                gap: 10px;
+                justify-content: center;
+            }
+            
+            .category-btn {
+                font-size: 12px;
+                margin: 0 3px 8px;
+                padding: 6px 0;
+            }
+            
+            .section-title {
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .about-content h2 {
+                font-size: 20px;
+            }
+            
+            .pagination a {
+                min-width: 36px;
+                height: 36px;
+                font-size: 14px;
+            }
+            
+            .container {
+                width: 100%;
+                padding: 10px;
+            }
+        }
+        
+        /* Additional small phone optimizations */
+        @media (max-width: 360px) {
             .gallery-item,
             .gallery-item.wide,
             .gallery-item.tall,
             .gallery-item.large,
             .gallery-item.extra-wide {
-                grid-column: span 2; /* Full width on mobile */
-                grid-row: auto;
-                min-height: 180px;
+                min-height: 140px;
             }
             
             .gallery-item.tall {
-                min-height: 300px;
-            }
-        }
-            
-        .nav-links {
-            gap: 15px;
-        }
-        
-        @media (max-width: 480px) {
-            .logo {
-                font-size: 24px;
+                min-height: 220px;
             }
             
-            nav {
+            .nav-links {
                 flex-direction: column;
-                gap: 20px;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .category-btn {
+                font-size: 11px;
+                padding: 5px 0;
+            }
+            
+            .pagination {
+                gap: 5px;
+            }
+            
+            .pagination a {
+                min-width: 30px;
+                height: 30px;
+                font-size: 12px;
+                padding: 0 8px;
             }
         }
         
@@ -520,6 +696,20 @@
         
         .gallery-item {
             transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        /* Improved touch support for mobile devices */
+        @media (hover: none) {
+            .gallery-item-info {
+                transform: translateY(0);
+                opacity: 0.9;
+                background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+                padding: 15px;
+            }
+            
+            .gallery-item:active img {
+                transform: scale(1.03);
+            }
         }
     </style>
 </head>
@@ -563,7 +753,7 @@
             
             <section id="about" class="about-section">
                 <div class="about-image">
-                    <img src="photos/image_files/ME.jpg" alt="Photographer Profile">
+                    <img src="/static/photos/image_files/ME.jpg" alt="Photographer Profile">
                 </div>
                 <div class="about-content">
                     <h2>About the Photographer</h2>
@@ -573,7 +763,7 @@
         </main>
         
         <footer>
-            <p>Kay Photos</p>
+            <p>Kay Photos</p>   
         </footer>
     </div>
     
@@ -996,7 +1186,9 @@
             
             const loadPhotosFromJSON = async () => {
                 try {
-                    const response = await fetch('photos/photos.json');
+                    console.log(window.location.pathname);
+                    const response = await fetch("{{ url_for('static', filename='photos/photos.json') }}");
+                    
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -1048,14 +1240,14 @@
                     const optimizedData = optimizeImageLayout(data);
                     
                     // Process images in smaller batches with improved layout
-                    const batchSize = 12; // Multiple of our 12-column grid
+                    const batchSize = 2; // Multiple of our 12-column grid
                     for (let i = 0; i < optimizedData.length; i += batchSize) {
                         const batch = optimizedData.slice(i, i + batchSize);
                         
                         // Process each batch
                         await Promise.all(batch.map(async (photo, batchIndex) => {
                             const index = i + batchIndex;
-                            const imagePath = `photos/image_files/${photo.image_path}`;
+                            const imagePath = `/static/photos/image_files/${photo.image_path}`;
                             const title = photo.image_title || 'Untitled';
                             const section = photo.section ? formatSectionId(photo.section) : null;
                             
