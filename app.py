@@ -10,6 +10,8 @@ def get_content_type(filename):
         return 'application/wasm'
     elif filename.endswith('.data.br'):
         return 'application/octet-stream'
+    elif filename.endswith('.js'):
+        return 'application/javascript'
     return 'application/octet-stream'
 
 @app.route("/")
