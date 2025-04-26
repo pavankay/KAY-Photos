@@ -23,6 +23,17 @@
         <div id="unity-build-title">2d AJ</div>
       </div>
     </div>
+    
+    <!-- Script to disable refresh functionality -->
+    <script>
+document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') {
+        e.preventDefault();
+        console.log('Refresh disabled');
+    }
+});
+</script>
+    
     <script>
       var container = document.querySelector("#unity-container");
       var canvas = document.querySelector("#unity-canvas");
