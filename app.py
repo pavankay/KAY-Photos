@@ -1,7 +1,10 @@
 from flask import Flask, render_template, send_file, Response, send_from_directory
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
+
+CORS(app)
 
 def get_content_type(filename):
     if filename.endswith('.js.br'):
